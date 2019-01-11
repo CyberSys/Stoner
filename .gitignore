@@ -1,3 +1,8 @@
+# local symbolic links
+irclite
+dogma
+zomboid
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
