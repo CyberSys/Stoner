@@ -2,7 +2,7 @@
 
 StereoTypcial Ordinary Normal Everyday Robot
 
-A example of using the (dogma framework)[https://github.com/FWolfe/dogma],
+A example of using the [dogma framework](https://github.com/FWolfe/dogma),
 as used in the ORGM discord/irc bot.
 This example uses several 'dogma programs' (located in the programs directory):
 
@@ -13,3 +13,11 @@ This example uses several 'dogma programs' (located in the programs directory):
 * pz - a component that uses pyZomboid to load and execute Project Zomboid's lua files
 
 * wsgi - a minimal wsgi web server, capable of serving dynamic or static files
+
+Requirements:
+
+* [dogma framework](https://github.com/FWolfe/dogma)
+
+* [irclite](https://github.com/FWolfe/irclite)
+
+* [pyZomboid](https://github.com/FWolfe/pyZomboid)
