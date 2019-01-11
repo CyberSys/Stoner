@@ -12,7 +12,7 @@ import zomboid.LuaManager as LuaManager
 from zomboid.TranslationManager import getText
 import zomboid.ScriptManager as ScriptManager
 #import zomboid.Inventory as InventoryItemFactory
-import zomboid.util as util
+import zomboid.orgmutil as util
 
 ORGM = LuaManager.instance.globals().ORGM
 Firearm = ORGM.Firearm
@@ -214,7 +214,7 @@ def check_search_results(results, search, event):
 #==============================================================================
 class OrgmPlugin(Plugin):
     is_busy = False
-        
+
     def load(self, ctx):
         super(OrgmPlugin, self).load(ctx)
         #self.data = ctx.get('data', {})
