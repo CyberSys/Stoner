@@ -7,16 +7,16 @@ as used in the ORGM discord/irc bot.
 This example uses several 'dogma programs' (located in the programs directory):
 
 * discord - a discord bot component, using disco-py. Capable of loading plugins
-(see plugin_discord)
+(see the plugin_discord directory)
 
 * irc - a minimal irc client, using irclite. Capable of loading plugins
-(see plugin_irc)
+(see the plugin_irc directory)
 
 * pz - a component that uses pyZomboid to load and execute Project Zomboid's lua files
 Plugins are not used by this component.
 
-* wsgi - a minimal wsgi web server, capable of serving dynamic or static files
-Capable of loading plugins (see plugin_wsgi)
+* wsgi - a very minimal example of a wsgi webserver, able to serve dynamic or static files
+Capable of loading plugins (see the plugin_wsgi directory)
 
 
 
