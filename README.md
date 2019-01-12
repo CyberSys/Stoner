@@ -24,6 +24,10 @@ Requirements:
 
 * [dogma framework](https://github.com/FWolfe/dogma)
 
-* [irclite](https://github.com/FWolfe/irclite)
+Optional Requirements (depending on programs loaded)
 
-* [pyZomboid](https://github.com/FWolfe/pyZomboid)
+* [irclite](https://github.com/FWolfe/irclite) for the IRC client
+
+* [pyZomboid](https://github.com/FWolfe/pyZomboid) for the Project Zomboid component
+
+* [disco](https://github.com/b1naryth1ef/disco) for the discord bot
