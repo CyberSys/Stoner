@@ -32,12 +32,12 @@ class WSGI(PlugableProgram):
         """
         print'Serving on https://:8001'
         self.server = pywsgi.WSGIServer(
-                (self.config.get('address', '127.0.0.1'), self.config.get('port', 8001)), 
+                (self.config.get('address', '127.0.0.1'), self.config.get('port', 8001)),
                 self.connect_handler,
-                #keyfile=self.config.get('keyfile'), # 'server.key', 
+                #keyfile=self.config.get('keyfile'), # 'server.key',
                 #certfile=self.config.get('certfile'), # 'server.crt'
                 )
-        
+
         PlugableProgram.init(self)
 
 
@@ -75,7 +75,7 @@ class WSGI(PlugableProgram):
 
         if response['code'] is None and not response['data'] is None:
             response['code'] = '200 OK'
-        
+
         start_response(response['code'], response['headers'])
 
         if isinstance(response['data'], dict):
@@ -118,7 +118,7 @@ class WSGI(PlugableProgram):
             data['body_args'] = {'name':'bob'}
             response['data'] = data
             return
-        
+
         raise ValueError
 
     def build_page(self, env, response):
@@ -130,15 +130,3 @@ class WSGI(PlugableProgram):
                 (data.get('head') and data['head'](**data.get('head_args', {})) or b''),
                 (data.get('body') and data['body'](**data.get('body_args', {})) or b''),
                 '</html>']
-
-
-
-
-
-#return response['data'] or [b'<h1>Not Found</h1>']
-#if env['PATH_INFO'] == '/':
-#    start_response('200 OK', [('Content-Type', 'text/html')])
-#    return [b"<b>hello world</b>"]
-
-#start_response('404 Not Found', [('Content-Type', 'text/html')])
-#return [b'<h1>Not Found</h1>']
