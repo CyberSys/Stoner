@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-StereoTypcial Ordinary Normal Everyday Robot
+StereoTypical Ordinary Normal Everyday Robot
 
 A example of using the dogma framework, as used in the ORGM discord/irc bot.
 This example uses several 'dogma programs' (located in the programs directory):

@@ -1,6 +1,6 @@
 # Stoner
 
-StereoTypcial Ordinary Normal Everyday Robot
+Stereotypical Ordinary Normal Everyday Robot
 
 A example of using the [dogma framework](https://github.com/FWolfe/dogma),
 as used in the ORGM discord/irc bot.

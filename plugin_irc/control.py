@@ -47,7 +47,7 @@ def try_calling (o, trap=False,glob=None,local=None):
 
 class Control(Plugin):
     access = {
-        'ev' : 1000,
+        'ev' : 100,
         'join' : 90,
         'part' : 90,
     }
