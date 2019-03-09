@@ -61,7 +61,7 @@ def getStatField():
         u"Range",
         u'MinDamage',
         u'MaxDamage',
-        u"Acquisition Speed",
+        u"Acquisition Time",
         u"Recoil",
         u"Noise",
         u"Accuracy",
@@ -104,6 +104,7 @@ def create_firearm_from_string(event, item):
     defaultBarrel = True
     ammo = None
     components = []
+    semiauto=True
     for a in args:
         if a.startswith('barrel='):
             try:
@@ -116,7 +117,8 @@ def create_firearm_from_string(event, item):
             if not check_search_results(cresult, a[5:], event):
                 return
             ammo = cresult[0]
-
+        elif a == "fullauto":
+            semiauto = False
         else:
             cresult = search_components(a)
             if not check_search_results(cresult, a, event):
@@ -124,7 +126,7 @@ def create_firearm_from_string(event, item):
             components.append(cresult[0])
 
     item = util.spawnFirearm(item, defaultBarrel=defaultBarrel,
-                             loaded=True, ammo=ammo, semiAutoMode=True,
+                             loaded=True, ammo=ammo, semiAutoMode=semiauto,
                              components=components)
     return item
 
