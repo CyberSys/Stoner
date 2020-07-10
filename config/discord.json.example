@@ -1,0 +1,12 @@
+/* REMOVE THIS COMMENT LINE OR THIS FILE WILL FAIL TO LOAD */
+{
+    "_autoload" : false,
+    "_module" : "programs.discord",
+    "_class" : "DiscoBot",
+    "token" : "ENTER YOUR DISCORD TOKEN HERE",
+    "plugins" : {
+        "programs.discord.plugins.lua":null
+    },
+    "owner" : 000000000000000000,
+    "access" : { "000000000000000000" : 1000 }
+}

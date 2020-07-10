@@ -1,0 +1,24 @@
+/* REMOVE THIS COMMENT LINE OR THIS FILE WILL FAIL TO LOAD */
+{
+    "_autoload" : false,
+    "_module" : "programs.irc",
+    "_class" : "Program",
+    "nick" : "Dogma",
+    "altnick" : "Dogma_",
+    "ident" : "Dogma",
+    "realname" : "Dogma",
+    "debug" : true,
+    "plugins" : {
+    },
+    "channels" : ["#MyChannel"],
+    "networks" : [
+        { 
+            "name" : "MyNetwork", 
+            "host" : "irc.mynetwork.com", 
+            "port" : 6667
+        }
+    ],
+    "access" : {
+        "SomeGuy!SomeGuy@127.0.01" : 100
+    }
+}
