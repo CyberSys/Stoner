@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 StereoTypical Ordinary Normal Everyday Robot
@@ -19,39 +19,61 @@ Created on Sat Nov  3 10:29:59 2018
 
 from gevent import monkey
 monkey.patch_all()
+import os
+import json
 
 import dogma
-dog = dogma.Agent()
-dog.program_new('programs.pz', {
-    'dir' : '/home/USERNAME/local/Project Zomboid/game/projectzomboid/',
-    'cache' : '/home/USERNAME/Zomboid/'
-})
-dog.program_new('programs.discord', {
-    'token' : u'ENTER YOUR DISCORD TOKEN HERE',
-    # 'plugins' : ['plugin_discord.orgm']
-})
+#dog = dogma.Agent()
+#dog.config_dir = "conf"
+#dog.program_directory = "programs"
 
-dog.program_new('programs.irc', {
-    'nick' : 'Dogma',
-    'altnick' : 'Dogma_',
-    'ident' : 'Dogma',
-    'realname' : 'Dogma',
-    'debug' : False,
-    'plugins' : ['plugin_irc.control'],
-    'networks' : (
-        {
-            'name' : 'MyNetwork',
-            'host' : 'irc.MyNetwork.com',
-            'port' : '6667',
-        },
-    ),
-    'onconnect' : [
-        lambda net: net.name == "MyNetwork" and net.join('#Chat'),
-    ],
-     # set a access levels for users, if plugin_irc.control is loaded
-    'access' : {
-        # 'nick!user@host' : 100,
-    }
-})
+class Stoner(dogma.Agent):
+    config_dir = "config"
+    config_ext = ".json"
+    program_directory = "programs"
+    
+    def config_load(self, program_name):
+        fi = open('%s/%s%s' % (self.config_dir, program_name, self.config_ext)) # TODO: exception catching
+        print("Reading Config: %s" % program_name)
+    
+        try:
+            config = json.load(fi) # TODO: exception catching
+        except json.decoder.JSONDecodeError as msg:
+            print("json.decoder.JSONDecodeError: %s" % msg)
+        fi.close()
+        if config is None:
+            return
+        
+        if not "_module" in config:
+            config["_module"] = "%s.%s" % (self.program_directory, program_name)
+    
+        if not "_class" in config:
+            config["_class"] = "Program"
+        return config
 
-dog.init()
+
+    def init(self):
+        for file in os.listdir(self.config_dir): 
+            if not file.endswith(self.config_ext):
+                continue
+            program_name = os.path.splitext(file)[0]
+            config = self.config_load(program_name)
+            if config is None:
+                continue    
+        
+            if not config.get("_autoload", False):
+                continue
+            
+            self.program_import(
+                module=config["_module"],
+                unique_id=program_name,
+                classname=config["_class"], 
+                config=config,
+                plugins=config.get('plugins')
+            )
+            
+        super().init()
+
+    
+eugene = Stoner()
+eugene.init()
