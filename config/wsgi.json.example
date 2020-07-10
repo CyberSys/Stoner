@@ -1,0 +1,12 @@
+/* REMOVE THIS COMMENT LINE OR THIS FILE WILL FAIL TO LOAD */
+{
+    "_autoload" : false,
+    "address" : "127.0.0.1",
+    "port" : 8001,
+    "templates" : "templates",
+    "plugins" : {
+        "programs.wsgi.plugins.static_pages" : {
+            "directory" : "static_pages"
+        }
+    }
+}
