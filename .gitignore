@@ -1,4 +1,5 @@
 # local symbolic links
+config/*.json
 irclite
 dogma
 zomboid
