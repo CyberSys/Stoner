@@ -2,7 +2,7 @@
 {
     "_autoload" : false,
     "_module" : "programs.discord",
-    "_class" : "DiscoBot",
+    "_class" : "Program",
     "token" : "ENTER YOUR DISCORD TOKEN HERE",
     "plugins" : {
         "programs.discord.plugins.lua":null

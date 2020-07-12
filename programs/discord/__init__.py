@@ -24,8 +24,8 @@ def get_level(self, actor):
     return level
 
 
-class DiscoBot(dogma.program.Program):
-    discord_id = 507586138655948810
+class Program(dogma.program.Program):
+    discord_id = 0
     
     def __init__(self, agent):
         super().__init__(agent)
@@ -34,6 +34,7 @@ class DiscoBot(dogma.program.Program):
 
     def load(self, config=None, state=None):
         super().load(config=config, state=state)
+        self.discord_id = config.get('me')
 
         config = ClientConfig()
         config.token = self.config.get('token')
