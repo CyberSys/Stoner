@@ -7,15 +7,28 @@
     "altnick" : "Dogma_",
     "ident" : "Dogma",
     "realname" : "Dogma",
-    "debug" : true,
     "plugins" : {
+        "control" : {
+            "_module" : "programs.irc.plugins.control"
+        },
+        "discord_bridge" : {
+            "_module" : "programs.irc.plugins.discord_bridge",
+            "connect" : {
+                "tekagis" : {
+                    "#MyChannel" : 000000000000000000
+                }
+            }
+        }
     },
     "channels" : ["#MyChannel"],
     "networks" : [
         { 
             "name" : "MyNetwork", 
             "host" : "irc.mynetwork.com", 
-            "port" : 6667
+            "port" : 6667,
+            "config" : {
+                "altnick" : "Override"
+            }
         }
     ],
     "access" : {
