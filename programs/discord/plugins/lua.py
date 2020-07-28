@@ -61,9 +61,9 @@ class LuaPlugin(Plugin):
         try:
             event.msg.reply(str(lua.eval(args)))
         except lupa._lupa.LuaSyntaxError as msg:
-            event.reply(f"**LuaSyntaxError:** `{msg}`")
+            event.msg.reply(f"**LuaSyntaxError:** `{msg}`")
         except lupa._lupa.LuaError as msg:
-            event.reply(f"**LuaError:** `{msg}`")
+            event.msg.reply(f"**LuaError:** `{msg}`")
 
 
     @Plugin.command('exec', '<args:str...>', group="lua", level=1000)
@@ -71,9 +71,9 @@ class LuaPlugin(Plugin):
         try:
             event.msg.reply(str(lua.execute(args)))
         except lupa._lupa.LuaSyntaxError as msg:
-            event.reply(f"**LuaSyntaxError:** `{msg}`")
+            event.msg.reply(f"**LuaSyntaxError:** `{msg}`")
         except lupa._lupa.LuaError as msg:
-            event.reply(f"**LuaError:** `{msg}`")
+            event.msg.reply(f"**LuaError:** `{msg}`")
 
 
     @Plugin.listen('MessageCreate')
