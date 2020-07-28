@@ -39,9 +39,9 @@ class Program(dogma.program.Program):
         config = ClientConfig()
         config.token = self.config.get('token')
         config.max_reconnects = 0
-        setup_logging(level=getattr(logging, config.log_level.upper()))
         self.client = Client(config)
         self.client.parent = self
+        self.client.agent = self.agent
 
         self.bot = None
         bot_config = BotConfig()
