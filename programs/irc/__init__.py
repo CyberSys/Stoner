@@ -35,32 +35,33 @@ class Program(PlugableProgram, irclite.Client):
         irclite.Client.run(self)
 
 
-    def trigger_command(self, network, msg, cmd):
+    def handle_command(self, command, args, event):
         for plugin in self.plugins.values():
-            callback = getattr(plugin, '_command_%s' % cmd, None)
+            callback = getattr(plugin, '_command_%s' % command, None)
             if not callback:
                 continue
-            if network.getaccess(msg.sender) < getattr(plugin, 'access', {}).get(cmd, 0):
+            if event.network.getaccess(event.source) < getattr(plugin, 'access', {}).get(command, 0):
                 continue
             ### general catch all, bad stuff
             try:
-                callback(network, msg)
-            except:
-                if sys.exc_type == exceptions.SystemExit:
+                callback(event, args)
+            except Exception:
+                et, ev, etr = sys.exc_info()
+                if et == exceptions.SystemExit:
                     exit()
-                print(self, str(sys.exc_type), str(sys.exc_value) )
-                network.privmsg(msg.dest, str(sys.exc_type) + " " + str(sys.exc_value))
+                raise
+                event.reply(f'{et} {ev}')
 
 
-    def trigger_event(self, network, msg):
+    def handle_event(self, event):
         for plugin in self.plugins.values():
-            callback = getattr(plugin, '_event_%s' % msg.type, None)
+            callback = getattr(plugin, '_event_%s' % event.type, None)
             if not callback:
                 continue
             ### general catch all, bad stuff
             try:
-                callback(msg)
-            except:
-                if sys.exc_type == exceptions.SystemExit:
+                callback(event)
+            except Exception:
+                et, ev, etr = sys.exc_info()
+                if et == exceptions.SystemExit:
                     exit()
-                print(self, str(sys.exc_type), str(sys.exc_value))
