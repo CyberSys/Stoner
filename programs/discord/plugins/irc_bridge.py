@@ -22,13 +22,12 @@ class IRCBridge(Plugin):
         for network in bridge:
             for channel, id in bridge[network].items():
                 self.channel_map[id] = (network, channel)
-                print(id, network, channel)
         
 
 
     @Plugin.listen('MessageCreate')
     def on_message_create(self, event):
-        if event.author.id == self.bot.parent.discord_id: # ignore ourself.
+        if event.author.id == self.bot.parent.me.id: # ignore ourself.
             return
         
         if not event.channel_id or not event.channel_id in self.channel_map:

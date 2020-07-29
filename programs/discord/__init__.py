@@ -5,10 +5,9 @@ Created on Sat Nov  3 15:18:18 2018
 
 @author: wolf
 """
+
 from disco.client import Client, ClientConfig
 from disco.bot import Bot, BotConfig
-from disco.util.logging import setup_logging
-import logging
 import dogma.program
 
 
@@ -34,7 +33,6 @@ class Program(dogma.program.Program):
 
     def load(self, config=None, state=None):
         super().load(config=config, state=state)
-        self.discord_id = config.get('me')
 
         config = ClientConfig()
         config.token = self.config.get('token')
@@ -60,6 +58,8 @@ class Program(dogma.program.Program):
         self.bot.agent = self.agent
         self.bot.parent = self
 
+        self.me = self.client.api.users_me_get()
+        #self.discord_id = self.me.id
 
     def unload(self, state=None):
         state = super().unload(state)

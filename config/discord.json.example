@@ -9,7 +9,6 @@
         "programs.discord.plugins.lua" : null,
         "programs.discord.plugins.irc_bridge" : null,
     },
-    "me" : 000000000000000000,
     "owner" : 000000000000000000,
     "access" : { "000000000000000000" : 1000 }
 }

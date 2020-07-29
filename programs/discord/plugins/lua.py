@@ -78,10 +78,10 @@ class LuaPlugin(Plugin):
 
     @Plugin.listen('MessageCreate')
     def on_message_create(self, event):
-        if event.author.id == self.bot.parent.discord_id: # ignore ourself.
+        if event.author.id == self.bot.parent.me.id: # ignore ourself.
             return
         access = self.bot.get_level(event.author)
-        if event.is_mentioned(self.bot.parent.discord_id):
+        if event.is_mentioned(self.bot.parent.me.id):
             if access == 1000:
                 for code in re.findall('```lua(.+?)```', event.content, re.S):
                     try:

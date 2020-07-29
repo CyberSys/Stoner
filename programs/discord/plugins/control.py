@@ -124,7 +124,7 @@ class DogmaControl(Plugin):
 
     @Plugin.listen('MessageCreate')
     def on_message_create(self, event):
-        if event.author.id == self.bot.parent.discord_id: # ignore ourself.
+        if event.author.id == self.bot.parent.me.id: # ignore ourself.
             return
         
         access = self.bot.get_level(event.author)
