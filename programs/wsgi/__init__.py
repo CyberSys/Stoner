@@ -63,7 +63,7 @@ class Program(PlugableProgram):
         for plugin in self.plugins.values():
             if not hasattr(plugin, 'connect_handler'):
                 continue
-            if plugin.input_callback(env, response) is False:
+            if plugin.connect_handler(env, response) is False:
                 return # explicitly returned false, drop this connection
 
         self.url_handler(env, response)
