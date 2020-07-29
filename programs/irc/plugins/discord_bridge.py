@@ -20,6 +20,12 @@ class Plugin(dogma.program.Plugin):
         if not event.chan:
             return 
 
+        if event.nick == event.network.nick:
+            return
+
+        if event.text.startswith(event.network.config["command_prefix"]):
+            return
+
         id = self.config['connect'].get(event.network.name, {}).get(event.chan)
         disco = self.uncle('discord')
         if not id or not disco:
