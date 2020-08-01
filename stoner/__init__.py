@@ -82,16 +82,19 @@ class Stoner(dogma.Agent):
             plugins = []
             # messy shit. refactor
             if 'plugins' in config:
-                for unique_id, plug in config["plugins"].items():
-                    if plug is None:
-                        plugins.append([unique_id])
-
-                    else:
-                        plugins.append([
-                            plug.get("_module", unique_id),
-                            unique_id,
-                            plug.get("_class", "Plugin"),
-                            plug])
+                for unique_id, plug_conf in config["plugins"].items():
+                    if plug_conf is None:
+                        plug_conf = {}
+                    
+                    if not plug_conf.get("_autoload", True):
+                        logger.info('Program %s skipping plugin %s', program_name, unique_id)
+                        continue
+                    logger.info('Program %s loading plugin %s', program_name, unique_id)
+                    plugins.append({
+                        'module' : plug_conf.get("_module", unique_id),
+                        'unique_id' : unique_id,
+                        'classname' : plug_conf.get("_class", "Plugin"),
+                        'config': plug_conf})
 
             self.program_import(
                 module=config["_module"],

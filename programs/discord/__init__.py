@@ -44,14 +44,23 @@ class Program(dogma.program.Program):
         self.bot = None
         bot_config = BotConfig()
         bot_config.commands_require_mention = False
-        bot_config.commands_prefix = '.'
+        bot_config.commands_prefix = self.config.get('command_prefix', '.')
 
         bot_config.levels = self.config.get('access', {})
 
         bot_config.commands_level_getter = get_level
         self.bot = Bot(self.client, bot_config)
-        for plugin_mod, pconf in self.config.get('plugins').items():
-            self.bot.add_plugin_module(plugin_mod, pconf)
+
+        for unique_id, pconf in self.config.get('plugins').items():
+            if pconf is None:
+                pconf = {}
+
+            pconf.setdefault("_autoload", True)
+            pconf.setdefault("_module", unique_id)
+            if not pconf["_autoload"]:
+                continue
+
+            self.bot.add_plugin_module(pconf["_module"], pconf) #TODO: replace
 
         for _, plugin in self.bot.plugins.items():
             plugin.parent = self
