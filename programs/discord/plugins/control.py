@@ -5,7 +5,7 @@ from disco.types.message import MessageEmbed
 from dogma.program import ProgramLoadError
 
 
-def embedReply(title=None, description=None, event=None):
+def embed_reply(title=None, description=None, event=None):
     embed = MessageEmbed()
     embed.title = title
     embed.description = description
@@ -14,9 +14,9 @@ def embedReply(title=None, description=None, event=None):
         event.msg.reply(None, embed=embed)
     return embed
 
-    
-class DogmaControl(Plugin):
 
+class DogmaControl(Plugin):
+    parent = None
 #    def load(self, ctx):
 #        super(DogmaControl, self).load(ctx)
 
@@ -39,7 +39,7 @@ class DogmaControl(Plugin):
             program = self.agent().program_import(
                 module=config["_module"],
                 unique_id=unique_id,
-                classname=config["_class"], 
+                classname=config["_class"],
                 config=config,
                 plugins=config.get('plugins')
             )
@@ -56,7 +56,7 @@ class DogmaControl(Plugin):
             event.msg.reply("ok")
         except ProgramLoadError as msg:
             event.msg.reply(f"**ProgramLoadError** `{msg}`")
-            
+
 
 
     @Plugin.command('reload', '<unique_id:str>', group='program', level=1000)
@@ -99,7 +99,7 @@ class DogmaControl(Plugin):
         except ProgramLoadError as msg:
             event.msg.reply(f"**ProgramLoadError** `{msg}`")
 
-        
+
 
     @Plugin.command('unload', '<program:str> <plugin:str>', group='plugin', level=1000)
     def on_plugin_unload_command(self, event, program, plugin):
@@ -126,7 +126,7 @@ class DogmaControl(Plugin):
     def on_message_create(self, event):
         if event.author.id == self.bot.parent.me.id: # ignore ourself.
             return
-        
+
         access = self.bot.get_level(event.author)
         if event.guild is None and access < 1000:
             self.parent.notify("DM Received (%s)" % event.author, event.content)

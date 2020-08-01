@@ -23,20 +23,21 @@ def get_level(self, actor):
 
 
 class Program(dogma.program.Program):
-    
+
     def __init__(self, agent):
         super().__init__(agent)
         self.client = None
         self.bot = None
+        self.me = None
 
 
     def load(self, config=None, state=None):
         super().load(config=config, state=state)
 
-        config = ClientConfig()
-        config.token = self.config.get('token')
-        config.max_reconnects = 0
-        self.client = Client(config)
+        conf = ClientConfig()
+        conf.token = self.config.get('token')
+        conf.max_reconnects = 0
+        self.client = Client(conf)
         self.client.parent = self
         self.client.agent = self.agent
 
@@ -44,15 +45,15 @@ class Program(dogma.program.Program):
         bot_config = BotConfig()
         bot_config.commands_require_mention = False
         bot_config.commands_prefix = '.'
-        
+
         bot_config.levels = self.config.get('access', {})
-        
-        bot_config.commands_level_getter  = get_level
+
+        bot_config.commands_level_getter = get_level
         self.bot = Bot(self.client, bot_config)
-        for plugin_mod, config in self.config.get('plugins').items():
-            self.bot.add_plugin_module(plugin_mod, config)
-        
-        for name, plugin in self.bot.plugins.items():
+        for plugin_mod, pconf in self.config.get('plugins').items():
+            self.bot.add_plugin_module(plugin_mod, pconf)
+
+        for _, plugin in self.bot.plugins.items():
             plugin.parent = self
 
         self.bot.agent = self.agent
@@ -77,4 +78,3 @@ class Program(dogma.program.Program):
         user = self.client.api.users_get(self.config["owner"])
         if user:
             user.open_dm().send_message("%s : %s" % (title, content))
-

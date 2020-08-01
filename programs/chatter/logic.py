@@ -14,6 +14,7 @@ from chatterbot.logic import LogicAdapter
 from chatterbot.conversation import Statement
 from nltk.corpus import wordnet
 
+# this regex system is aweful for detecting. need to be using a tokenizer.
 RE_QUERIES = {
     'examples' : re.compile(r'^ *(?:what +are|name|give +me|explain)(?: +some| +a few)?(?: +different)? +(?:meanings|examples) +(?:of|for)(?: +a)? +(\w+) *\?? *$'),
     'what is' : re.compile(r"^ *what(?:'?s| +are| +is)(?: +a| +the)? +(\w+)(?: +(?:in +the +context +of|refering +to|talking +about|as +a) +(\w+))? *\?? *$"),
@@ -54,7 +55,7 @@ def random_lemma(syn, count=1):
     """returns N random entries from a synset"""
     if isinstance(syn, str):
         syn = wordnet.synset(syn)
-    
+
     names = syn.lemma_names()
     if len(names) < count:
         count = len(names)
@@ -84,16 +85,17 @@ def join_description(syn):
     lemma = ', '.join(random_lemma(syn, count=random.randint(1, 5)))
     return "%s (%s): %s" % (syn.lexname().replace('.', ', '), lemma, syn.definition())
 
-    
+
 def solve_examples(subject):
     sets = wordnet.synsets(subject)
     if not sets:
         return None
+
     return '\n'.join([join_description(syn) for syn in sets])
 
 
 
-    
+
 def solve_what_is(subject, context):
     if context:
         relate = vague_relation(subject, context)
@@ -136,7 +138,7 @@ class QueryLogicAdapter(LogicAdapter):
         return query.type is not None
 
 
-    def process(self, statement, additional_response_selection_parameters):
+    def process(self, statement, additional_response_selection_parameters=None):
 
         result = Statement("I have no idea.")
         result.confidence = 0.9
@@ -155,10 +157,10 @@ class QueryLogicAdapter(LogicAdapter):
 
         elif query.type == 'examples':
             text, confidence = solve_examples(*query.match.groups()), 1.0
-            
+
 
         if text:
             result = Statement(text)
             result.confidence = confidence
-            
+
         return result

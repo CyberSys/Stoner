@@ -7,12 +7,10 @@ Created on Sun Jul 26 09:49:11 2020
 """
 import os
 import json
-
-
-import dogma
 import logging
+import dogma
 
-logger = logging.getLogger("Stoner")
+logger = logging.getLogger(__name__)
 
 def setup_logging(level_overrides, level): # mostly borrowed from disco-py
     import warnings
@@ -22,7 +20,9 @@ def setup_logging(level_overrides, level): # mostly borrowed from disco-py
     logging.captureWarnings(True)
 
     # Pass through our basic configuration
-    logging.basicConfig(format='[%(levelname)s] %(asctime)s - %(name)s:%(lineno)d - %(message)s', level=level)
+    logging.basicConfig(
+        format='[%(levelname)s] %(asctime)s - %(name)s:%(lineno)d - %(message)s',
+        level=level)
 
     # Override some noisey loggers
     for olog, olvl in level_overrides.items():
@@ -38,25 +38,31 @@ class Stoner(dogma.Agent):
 
     def config_load(self, program_name):
         try:
-            fih = open('%s/%s%s' % (self.config_dir, program_name, self.config_ext)) # TODO: exception catching
+            fih = open('%s/%s%s' % (self.config_dir, program_name, self.config_ext))
+
         except FileNotFoundError:
             return None
+
         logger.info("Reading Config: %s", program_name)
         config = None
         try:
-            config = json.load(fih) # TODO: exception catching
+            config = json.load(fih)
+
         except json.decoder.JSONDecodeError as msg:
             logger.error("json.decoder.JSONDecodeError for %s: %s", program_name, msg)
+
         fih.close()
         if config is None:
             logger.error("No config file loaded for %s", program_name)
             return None
+
         config.setdefault("_module", "%s.%s" % (self.program_directory, program_name))
         config.setdefault("_class", "Program")
         config.setdefault("_autoload", False)
 
         if not "_class" in config:
             config["_class"] = "Program"
+
         return config
 
 
@@ -64,6 +70,7 @@ class Stoner(dogma.Agent):
         for file in os.listdir(self.config_dir):
             if not file.endswith(self.config_ext):
                 continue
+
             program_name = os.path.splitext(file)[0]
             config = self.config_load(program_name)
             if config is None:
@@ -78,6 +85,7 @@ class Stoner(dogma.Agent):
                 for unique_id, plug in config["plugins"].items():
                     if plug is None:
                         plugins.append([unique_id])
+
                     else:
                         plugins.append([
                             plug.get("_module", unique_id),

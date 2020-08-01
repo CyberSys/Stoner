@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from disco.bot import Plugin
-import lupa
-lua = None
 import re
-import gevent
 import logging
+import gevent
+import lupa
+from disco.bot import Plugin
 
 # TODO: limit instance runtime
 
@@ -41,12 +40,9 @@ class LuaPlugin(Plugin):
         self.config.setdefault('allowlist', DEFAULT_ALLOW[:])
 
         self.instances = []
-        self.lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+        self.lua = lupa.LuaRuntime(unpack_returned_tuples=True) # pylint: disable=E1101
         self.sandbox_instance(self.lua)
 
-
-    def unload(self, ctx):
-        return super(LuaPlugin, self).unload(ctx)
 
 
     def agent(self):
@@ -61,7 +57,7 @@ class LuaPlugin(Plugin):
 
     def create_instance(self, sandbox=True):
         logger.debug("Creating new lua instance")
-        lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+        lua = lupa.LuaRuntime(unpack_returned_tuples=True) # pylint: disable=E1101
         if sandbox:
             self.sandbox_instance(lua)
 
@@ -75,20 +71,20 @@ class LuaPlugin(Plugin):
 
         self.instances.append(gevent.spawn(self._run_instance, **kwargs))
 
-    
+
     def _run_instance(self, callback, lua=None, code='', **kwargs):
         if lua is None:
-            lua = self.create_instance(lua, self.config['sandbox'])
-        
+            lua = self.create_instance(self.config['sandbox'])
+
         result = None
 
         try:
             result = str(lua.execute(code))
 
-        except lupa._lupa.LuaSyntaxError as msg:
+        except lupa._lupa.LuaSyntaxError as msg: # pylint: disable=W0212
             result = f"**LuaSyntaxError:** `{msg}`"
 
-        except lupa._lupa.LuaError as msg:
+        except lupa._lupa.LuaError as msg: # pylint: disable=W0212
             result = f"**LuaError:** `{msg}`"
 
         try:
@@ -102,7 +98,7 @@ class LuaPlugin(Plugin):
 
     def return_result(self, result, reply, **kwargs):
         reply(result)
-        
+
 
 #==============================================================================
 #
@@ -144,7 +140,7 @@ class LuaPlugin(Plugin):
                 # drop 1 indentation level to open public access
                 for code in re.findall('```lua(.+?)```', event.content, re.S):
                     self.spawn_instance(
-                            code=code, 
-                            callback=self.return_result, 
-                            reply=event.reply, 
-                            lua=instance)
+                        code=code,
+                        callback=self.return_result,
+                        reply=event.reply,
+                        lua=instance)
