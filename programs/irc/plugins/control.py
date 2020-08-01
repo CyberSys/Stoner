@@ -8,7 +8,7 @@ Created on Mon Nov  5 14:36:09 2018
 
 import dogma.program
 PROGRAM_COMMANDS = ('list', 'load', 'unload','reload')
-
+import re
 
 class Plugin(dogma.program.Plugin):
     access = {
@@ -85,11 +85,13 @@ class Plugin(dogma.program.Plugin):
 
 
     def _command_plugin(self, event, args):
-        try:
-            cmd, program, plugin = args.split(None, 2)
         
-        except ValueError:
+        match = re.match(r' *(\S+) +(\S+)(?: (\S+))? *', args)
+        if not match:
+            event.reply(f"**BadInputError** Command syntax is 'plugin <cmd> <program> [<plugin>]`")
             return
+        
+        cmd, program, plugin = match.groups()
 
         if not cmd in PROGRAM_COMMANDS:
             event.reply(f"**BadInputError** {cmd} not in {PROGRAM_COMMANDS}`")
@@ -102,7 +104,7 @@ class Plugin(dogma.program.Plugin):
 
         try:        
             if cmd == 'list':
-                event.reply(str(self.parent.plugs.keys()))
+                event.reply(str(self.parent.plugins.keys()))
 
             elif cmd == 'load':
                 pro.plugin_import(plugin, pro.config.get('plugins', {}).get(plugin))
