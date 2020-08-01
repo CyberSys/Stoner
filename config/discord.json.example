@@ -4,11 +4,40 @@
     "_module" : "programs.discord",
     "_class" : "Program",
     "token" : "ENTER YOUR DISCORD TOKEN HERE",
+    "owner" : 000000000000000000,
+    "access" : { "000000000000000000" : 1000 },
     "plugins" : {
         "programs.discord.plugins.control" : null,
-        "programs.discord.plugins.lua" : null,
         "programs.discord.plugins.irc_bridge" : null,
-    },
-    "owner" : 000000000000000000,
-    "access" : { "000000000000000000" : 1000 }
+        "programs.discord.plugins.chatter" : {
+            "server_whitelist" : [ 000000000000000000 ],
+            "channel_whitelist" : [ ],
+            "channel_blacklist" : [ ]
+        },
+        "programs.discord.plugins.lua" : {
+            "max_instances" : 5,
+            "sandbox" : true,
+            "owner_sandbox" : true,
+            "owner_persistance" : true,
+            "allowlist" : [
+                "assert",
+                "tostring",
+                "tonumber",
+                "ipairs",
+                "pairs",
+                "print",
+                "unpack",
+                "table",
+                "_VERSION",
+                "next",
+                "math",
+                "_G",
+                "select",
+                "string",
+                "type",
+                "getmetatable",
+                "setmetatable"
+            ]
+        }
+    }
 }
