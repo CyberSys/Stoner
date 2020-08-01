@@ -102,9 +102,13 @@ class Plugin(dogma.program.Plugin):
             event.reply(f"**BadInputError** `can't {cmd} plugin for non-loaded program {program}`")
             return
 
-        try:        
+        if not hasattr(pro, 'plugins'):
+            event.reply(f"**BadInputError** `program {program} doesn't appear to support plugins`")
+            return
+
+        try:
             if cmd == 'list':
-                event.reply(str(self.parent.plugins.keys()))
+                event.reply(str(pro.plugins.keys()))
 
             elif cmd == 'load':
                 pro.plugin_import(plugin, pro.config.get('plugins', {}).get(plugin))
