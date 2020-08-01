@@ -16,7 +16,7 @@ Optional Requirements (depending on programs loaded)
 
 * [irclite](https://github.com/FWolfe/irclite) for the IRC client
 
-* [pyZomboid](https://github.com/FWolfe/pyZomboid) for the Project Zomboid component
+* [chatterbot](https://github.com/gunthercox/ChatterBot) for the chat bot
 
 * [disco](https://github.com/b1naryth1ef/disco) for the discord bot
 
