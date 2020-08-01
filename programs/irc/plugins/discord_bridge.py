@@ -2,7 +2,7 @@
 
 import dogma.program
 import re
-text_filter = re.compile(r"[^A-Za-z0-9,\./ \~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\|\[\]\{\}]")
+text_filter = re.compile(r"[^A-Za-z0-9,\./\? \~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\|\[\]\{\}]")
 
 class Plugin(dogma.program.Plugin):
     def init(self):
