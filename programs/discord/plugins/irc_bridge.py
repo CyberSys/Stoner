@@ -2,7 +2,7 @@
 
 from disco.bot import Plugin
 import re
-text_filter = re.compile(r"[^A-Za-z0-9,\./ \~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\|\[\]\{\}]")
+text_filter = re.compile(r"[^A-Za-z0-9,\./ \~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\|\[\]\{\}\:]")
 
 
 class IRCBridge(Plugin):
