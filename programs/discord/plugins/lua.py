@@ -3,46 +3,106 @@ from disco.bot import Plugin
 import lupa
 lua = None
 import re
+import gevent
+import logging
 
+# TODO: limit instance runtime
 
-def sandbox(instance):
-    whitelist = [
-        'assert',
-        'tostring',
-        'tonumber',
-        'ipairs',
-        'pairs',
-        'print',
-        'unpack',
-        'table',
-        '_VERSION',
-        'next',
-        'math',
-        '_G',
-        'select',
-        'string',
-        'type',
-        'getmetatable',
-        'setmetatable',
+DEFAULT_ALLOW = [
+    'assert',
+    'tostring',
+    'tonumber',
+    'ipairs',
+    'pairs',
+    'print',
+    'unpack',
+    'table',
+    '_VERSION',
+    'next',
+    'math',
+    '_G',
+    'select',
+    'string',
+    'type',
+    'getmetatable',
+    'setmetatable',
     ]
-    for x in lua.globals().keys():
-        if not x in whitelist:
-            lua.globals()[x] = None
+
+logger = logging.getLogger(__name__)
 
 class LuaPlugin(Plugin):
+    instances = None
+    lua = None
 
     def load(self, ctx):
-        global lua
         super(LuaPlugin, self).load(ctx)
-        lua = lupa.LuaRuntime(unpack_returned_tuples=True)
-        sandbox(lua)
+        self.config.setdefault('sandbox', True)
+        self.config.setdefault('max_instances', 5)
+        self.config.setdefault('allowlist', DEFAULT_ALLOW[:])
+
+        self.instances = []
+        self.lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+        self.sandbox_instance(self.lua)
 
 
     def unload(self, ctx):
         return super(LuaPlugin, self).unload(ctx)
 
+
     def agent(self):
         return self.bot.parent.agent
+
+
+    def sandbox_instance(self, lua):
+        for x in lua.globals().keys():
+            if not x in self.config['allowlist']:
+                lua.globals()[x] = None
+
+
+    def create_instance(self, sandbox=True):
+        logger.debug("Creating new lua instance")
+        lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+        if sandbox:
+            self.sandbox_instance(lua)
+
+        return lua
+
+
+    def spawn_instance(self, **kwargs):
+        if len(self.instances) >= self.config['max_instances']:
+            return
+        logger.info("Spawning greenlet for lua instance")
+
+        self.instances.append(gevent.spawn(self._run_instance, **kwargs))
+
+    
+    def _run_instance(self, callback, lua=None, code='', **kwargs):
+        if lua is None:
+            lua = self.create_instance(lua, self.config['sandbox'])
+        
+        result = None
+
+        try:
+            result = str(lua.execute(code))
+
+        except lupa._lupa.LuaSyntaxError as msg:
+            result = f"**LuaSyntaxError:** `{msg}`"
+
+        except lupa._lupa.LuaError as msg:
+            result = f"**LuaError:** `{msg}`"
+
+        try:
+            self.instances.remove(gevent.getcurrent())
+        except ValueError:
+            pass
+
+        logger.debug("Instance run finished")
+        callback(result, **kwargs)
+
+
+    def return_result(self, result, reply, **kwargs):
+        reply(result)
+        
 
 #==============================================================================
 #
@@ -50,46 +110,41 @@ class LuaPlugin(Plugin):
 
     @Plugin.command('reset', group="lua", level=1000)
     def on_lua_reset_command(self, event):
-        lua = lupa.LuaRuntime(unpack_returned_tuples=True)
-        sandbox(lua)
+        self.lua = self.create_instance(self.config['owner_sandbox'])
         event.msg.reply("ok.")
 
 
 
-    @Plugin.command('eval', '<args:str...>', group="lua", level=1000)
-    def on_lua_eval_command(self, event, args):
-        try:
-            event.msg.reply(str(lua.eval(args)))
-        except lupa._lupa.LuaSyntaxError as msg:
-            event.msg.reply(f"**LuaSyntaxError:** `{msg}`")
-        except lupa._lupa.LuaError as msg:
-            event.msg.reply(f"**LuaError:** `{msg}`")
+#    @Plugin.command('eval', '<code:str...>', group="lua", level=1000)
+#    def on_lua_eval_command(self, event, args):
+#        try:
+#            event.msg.reply(str(lua.eval(args)))
+#        except lupa._lupa.LuaSyntaxError as msg:
+#            event.msg.reply(f"**LuaSyntaxError:** `{msg}`")
+#        except lupa._lupa.LuaError as msg:
+#            event.msg.reply(f"**LuaError:** `{msg}`")
 
 
-    @Plugin.command('exec', '<args:str...>', group="lua", level=1000)
-    def on_lua_exec_command(self, event, args):
-        try:
-            event.msg.reply(str(lua.execute(args)))
-        except lupa._lupa.LuaSyntaxError as msg:
-            event.msg.reply(f"**LuaSyntaxError:** `{msg}`")
-        except lupa._lupa.LuaError as msg:
-            event.msg.reply(f"**LuaError:** `{msg}`")
+    @Plugin.command('exec', '<code:str...>', group="lua", level=1000)
+    def on_lua_exec_command(self, event, code):
+        instance = self.lua
+        self.spawn_instance(code=code, callback=self.return_result, reply=event.reply, lua=instance)
 
 
     @Plugin.listen('MessageCreate')
     def on_message_create(self, event):
         if event.author.id == self.bot.parent.me.id: # ignore ourself.
             return
+
         access = self.bot.get_level(event.author)
         if event.is_mentioned(self.bot.parent.me.id):
+            instance = None
             if access == 1000:
+                instance = self.lua
+                # drop 1 indentation level to open public access
                 for code in re.findall('```lua(.+?)```', event.content, re.S):
-                    try:
-                        result = lua.execute(code)
-                        if result:
-                            event.reply(str(result))
-                    except lupa._lupa.LuaSyntaxError as msg:
-                        event.reply(f"**LuaSyntaxError:** `{msg}`")
-                    except lupa._lupa.LuaError as msg:
-                        event.reply(f"**LuaError:** `{msg}`")
-
+                    self.spawn_instance(
+                            code=code, 
+                            callback=self.return_result, 
+                            reply=event.reply, 
+                            lua=instance)
