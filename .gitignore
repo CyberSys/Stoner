@@ -1,9 +1,10 @@
 # local symbolic links
 config/*.json
+local/*
+programs/*/plugins/tekagis.py
 irclite
 dogma
 zomboid
-stoner-dev.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
