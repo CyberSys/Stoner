@@ -19,18 +19,6 @@ Created on Sat Nov  3 10:29:59 2018
 
 from gevent import monkey
 monkey.patch_all()
-import logging
 import stoner
-
-
-stoner.setup_logging( # some of these overrides need to goto specific config files.
-    {
-        'irclite' : logging.DEBUG,
-        'requests': logging.WARNING,
-    },
-
-    logging.INFO #getattr(logging, 'DEBUG')
-)
-
 eugene = stoner.Stoner()
 eugene.init()
