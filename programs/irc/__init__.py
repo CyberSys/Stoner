@@ -45,7 +45,7 @@ class Program(PlugableProgram, irclite.Client):
             ### general catch all, bad stuff
             try:
                 callback(event, args)
-            except:
+            except Exception:
                 et, ev, etr = sys.exc_info()
                 if et == exceptions.SystemExit:
                     exit()
@@ -60,7 +60,7 @@ class Program(PlugableProgram, irclite.Client):
             ### general catch all, bad stuff
             try:
                 callback(event)
-            except:
+            except Exception:
                 et, ev, etr = sys.exc_info()
                 if et == exceptions.SystemExit:
                     exit()
