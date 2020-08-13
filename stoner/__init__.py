@@ -12,93 +12,131 @@ import dogma
 
 logger = logging.getLogger(__name__)
 
-def setup_logging(level_overrides, level): # mostly borrowed from disco-py
-    import warnings
 
-    # Setup warnings module correctly
-    warnings.simplefilter('always', DeprecationWarning)
-    logging.captureWarnings(True)
 
-    # Pass through our basic configuration
-    logging.basicConfig(
-        format='[%(levelname)s] %(asctime)s - %(name)s:%(lineno)d - %(message)s',
-        level=level)
+def load_config_file(path, file, form='json'):
+    if form == 'json':
+        parser = json.load
+    try:
+        fih = open(os.path.join(path, file))
 
-    # Override some noisey loggers
-    for olog, olvl in level_overrides.items():
-        logging.getLogger(olog).setLevel(olvl)
+    except FileNotFoundError:
+        return None
+
+    logger.info("Reading Config: %s", file)
+    config = None
+    try:
+        config = parser(fih)
+
+    except json.decoder.JSONDecodeError as msg:
+        logger.error("json.decoder.JSONDecodeError for %s: %s", file, msg)
+
+    fih.close()
+    return config
 
 
 
 class Stoner(dogma.Agent):
+    config = None
     config_dir = "config"
     config_ext = ".json"
     program_directory = "programs"
 
+    def __init__(self):
+        super().__init__()
+        self.config = load_config_file(self.config_dir, 'stoner.json')
+        if not self.config:
+            logger.error("No config file loaded. exiting.")
+            exit()
 
-    def config_load(self, program_name):
-        try:
-            fih = open('%s/%s%s' % (self.config_dir, program_name, self.config_ext))
+        # initialize logging
+        self.config.setdefault("log_level", "INFO")
+        self.config.setdefault("log_overrides", {})
+        self.config.setdefault("log_format", '[%(levelname)s] %(asctime)s - %(name)s:%(lineno)d - %(message)s')
+        self.init_logging()
 
-        except FileNotFoundError:
-            return None
 
-        logger.info("Reading Config: %s", program_name)
-        config = None
-        try:
-            config = json.load(fih)
+    def init_logging(self):
+        # somewhat borrowed from disco-py
+        import warnings
 
-        except json.decoder.JSONDecodeError as msg:
-            logger.error("json.decoder.JSONDecodeError for %s: %s", program_name, msg)
+        # Setup warnings module correctly
+        warnings.simplefilter('always', DeprecationWarning)
+        logging.captureWarnings(True)
 
-        fih.close()
+        # Pass through our basic configuration
+        logging.basicConfig(
+            format=self.config["log_format"],
+            level=getattr(logging, self.config["log_level"], "INFO"))
+
+        # Override specific loggers
+        for olog, olvl in self.config["log_overrides"].items():
+            logging.getLogger(olog).setLevel(getattr(logging, olvl, "INFO"))
+
+
+    def load_config(self, config, unique_id, default_module=None, default_class="Program", default_autoload=False):
         if config is None:
-            logger.error("No config file loaded for %s", program_name)
+            config = {}
+
+        elif type(config) == str:
+            config = load_config_file(self.config_dir, config)
+
+        if config is None:
+            logger.error("No config file loaded for %s", unique_id)
             return None
 
-        config.setdefault("_module", "%s.%s" % (self.program_directory, program_name))
-        config.setdefault("_class", "Program")
-        config.setdefault("_autoload", False)
+        if default_module is None:
+            default_module = "%s.%s" % (self.program_directory, unique_id)
 
-        if not "_class" in config:
-            config["_class"] = "Program"
+        # apply defaults
+        config.setdefault("_module", default_module)
+        config.setdefault("_class", default_class)
+        config.setdefault("_autoload", default_autoload)
 
         return config
 
 
+    def get_autoload_plugins(self, program_id, config):
+        plugins = []
+        if 'plugins' not in config:
+            return plugins
+
+        for plugin_id, plugin_config in config["plugins"].items():
+            plugin_config = self.load_config(
+                plugin_config, plugin_id, default_module=plugin_id,
+                default_class="Plugin", default_autoload=False)
+
+            if not plugin_config.get("_autoload", True):
+                logger.info('Program %s skipping plugin %s', program_id, plugin_id)
+                continue
+
+            logger.info('Program %s loading plugin %s', program_id, plugin_id)
+            plugins.append({
+                'module' : plugin_config["_module"],
+                'unique_id' : plugin_id,
+                'classname' : plugin_config["_class"],
+                'config': plugin_config})
+
+        return plugins
+
+
     def init(self):
-        for file in os.listdir(self.config_dir):
+        programs = self.config.get('programs', {})
+
+        for file in programs:
             if not file.endswith(self.config_ext):
                 continue
 
-            program_name = os.path.splitext(file)[0]
-            config = self.config_load(program_name)
-            if config is None:
+            program_id = os.path.splitext(file)[0]
+            config = self.load_config(file, program_id, default_class="Program", default_autoload=False)
+
+            if config is None or not config["_autoload"]:
                 continue
 
-            if not config["_autoload"]:
-                continue
-
-            plugins = []
-            # messy shit. refactor
-            if 'plugins' in config:
-                for unique_id, plug_conf in config["plugins"].items():
-                    if plug_conf is None:
-                        plug_conf = {}
-                    
-                    if not plug_conf.get("_autoload", True):
-                        logger.info('Program %s skipping plugin %s', program_name, unique_id)
-                        continue
-                    logger.info('Program %s loading plugin %s', program_name, unique_id)
-                    plugins.append({
-                        'module' : plug_conf.get("_module", unique_id),
-                        'unique_id' : unique_id,
-                        'classname' : plug_conf.get("_class", "Plugin"),
-                        'config': plug_conf})
-
+            plugins = self.get_autoload_plugins(program_id, config)
             self.program_import(
                 module=config["_module"],
-                unique_id=program_name,
+                unique_id=program_id,
                 classname=config["_class"],
                 config=config,
                 plugins=plugins
