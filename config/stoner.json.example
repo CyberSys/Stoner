@@ -1,0 +1,13 @@
+{
+    "programs" : [
+        "chatter.json",
+        "discord.json",
+        "irc.json",
+        "wsgi.json"
+    ],
+    "log_level" : "INFO",
+    "log_overrides" : {
+        "irclite" : "INFO",
+        "requests" : "WARNING"
+    }
+}
