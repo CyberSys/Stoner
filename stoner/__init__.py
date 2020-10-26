@@ -67,11 +67,11 @@ class Stoner(dogma.Agent):
         # Pass through our basic configuration
         logging.basicConfig(
             format=self.config["log_format"],
-            level=getattr(logging, self.config["log_level"], "INFO"))
+            level=getattr(logging, self.config["log_level"], logging.INFO))
 
         # Override specific loggers
         for olog, olvl in self.config["log_overrides"].items():
-            logging.getLogger(olog).setLevel(getattr(logging, olvl, "INFO"))
+            logging.getLogger(olog).setLevel(getattr(logging, olvl, logging.INFO))
 
 
     def load_config(self, config, unique_id, default_module=None, default_class="Program", default_autoload=False):
