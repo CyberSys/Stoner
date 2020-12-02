@@ -5,6 +5,7 @@ import gevent
 import lupa
 from disco.bot import Plugin
 
+from .. import Program
 # TODO: limit instance runtime
 
 DEFAULT_ALLOW = [
@@ -36,12 +37,14 @@ class LuaPlugin(Plugin):
     def load(self, ctx):
         super(LuaPlugin, self).load(ctx)
         self.config.setdefault('sandbox', True)
+        self.config.setdefault('owner_sandbox', True)
         self.config.setdefault('max_instances', 5)
+        self.config.setdefault('min_access_level', 0)
         self.config.setdefault('allowlist', DEFAULT_ALLOW[:])
 
         self.instances = []
-        self.lua = lupa.LuaRuntime(unpack_returned_tuples=True) # pylint: disable=E1101
-        self.sandbox_instance(self.lua)
+        self.lua = self.create_instance(self.config['owner_sandbox']) # unique owner instance
+
 
 
 
@@ -65,7 +68,7 @@ class LuaPlugin(Plugin):
 
 
     def spawn_instance(self, **kwargs):
-        if len(self.instances) >= self.config['max_instances']:
+        if not kwargs['lua'] and len(self.instances) >= self.config['max_instances']:
             return
         logger.info("Spawning greenlet for lua instance")
 
@@ -109,38 +112,28 @@ class LuaPlugin(Plugin):
         self.lua = self.create_instance(self.config['owner_sandbox'])
         event.msg.reply("ok.")
 
-
-
-#    @Plugin.command('eval', '<code:str...>', group="lua", level=1000)
-#    def on_lua_eval_command(self, event, args):
-#        try:
-#            event.msg.reply(str(lua.eval(args)))
-#        except lupa._lupa.LuaSyntaxError as msg:
-#            event.msg.reply(f"**LuaSyntaxError:** `{msg}`")
-#        except lupa._lupa.LuaError as msg:
-#            event.msg.reply(f"**LuaError:** `{msg}`")
-
-
     @Plugin.command('exec', '<code:str...>', group="lua", level=1000)
     def on_lua_exec_command(self, event, code):
         instance = self.lua
         self.spawn_instance(code=code, callback=self.return_result, reply=event.reply, lua=instance)
 
-
     @Plugin.listen('MessageCreate')
     def on_message_create(self, event):
-        if event.author.id == self.bot.parent.me.id: # ignore ourself.
+        if not event.is_mentioned(self.bot.parent.me.id):
             return
 
-        access = self.bot.get_level(event.author)
-        if event.is_mentioned(self.bot.parent.me.id):
-            instance = None
-            if access == 1000:
-                instance = self.lua
-                # drop 1 indentation level to open public access
-                for code in re.findall('```lua(.+?)```', event.content, re.S):
-                    self.spawn_instance(
-                        code=code,
-                        callback=self.return_result,
-                        reply=event.reply,
-                        lua=instance)
+        if not Program.check_access(self, event, level=self.config['min_access_level'],
+                                    allow_dm=False, require_whitelists=False):
+            return
+
+        instance = None
+        if self.parent.is_owner(event.author):
+            instance = self.lua
+
+        for code in re.findall('```lua(.+?)```', event.content, re.S):
+            self.spawn_instance(
+                code=code,
+                callback=self.return_result,
+                reply=event.reply,
+                lua=instance)
+

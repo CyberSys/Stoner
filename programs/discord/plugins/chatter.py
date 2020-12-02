@@ -7,6 +7,8 @@ Created on Fri Jul 31 15:29:24 2020
 """
 import re
 from disco.bot import Plugin
+from .. import Program
+
 RE_FILTER = re.compile(r"[^A-Za-z0-9,\./ \~\!\@\#\$\%\^\&\*\(\)\_\-\+\=\|\[\]\{\}\:]")
 
 
@@ -74,10 +76,8 @@ class ChatterPlugin(Plugin):
 
     @Plugin.listen('MessageCreate')
     def on_message_create(self, event):
-        if event.author.id == self.bot.parent.me.id: # ignore ourself.
-            return
 
-        if event.author.bot or not event.content:
+        if not Program.check_access(self, event, require_whitelists=True):
             return
 
         access = self.bot.get_level(event.author)
@@ -87,21 +87,8 @@ class ChatterPlugin(Plugin):
 
             return
 
-        if event.guild is None and not access:
-            return
-
         if "```" in event.content:
             return
 
-        server_whitelist = self.config['server_whitelist']
-        channel_whitelist = self.config['channel_whitelist']
-        channel_blacklist = self.config['channel_blacklist']
-
-        if event.channel and event.channel.id in channel_blacklist:
-            return
-
-        if event.guild and (event.guild.id not in server_whitelist
-                            and event.channel.id not in channel_whitelist):
-            return
 
         self.get_chatter(event)
