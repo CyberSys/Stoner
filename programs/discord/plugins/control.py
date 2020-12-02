@@ -120,13 +120,3 @@ class DogmaControl(Plugin):
             pro = self.bot.agent.programs.get(program)
         if pro:
             event.msg.reply(str([x for x in pro.plugins.keys()]))
-
-
-    @Plugin.listen('MessageCreate')
-    def on_message_create(self, event):
-        if event.author.id == self.bot.parent.me.id: # ignore ourself.
-            return
-
-        access = self.bot.get_level(event.author)
-        if event.guild is None and access < 1000:
-            self.parent.notify("DM Received (%s)" % event.author, event.content)
