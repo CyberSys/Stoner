@@ -40,6 +40,7 @@ class LuaPlugin(Plugin):
         self.config.setdefault('owner_sandbox', True)
         self.config.setdefault('max_instances', 5)
         self.config.setdefault('min_access_level', 0)
+        self.config.setdefault('require_whitelist', False)
         self.config.setdefault('allowlist', DEFAULT_ALLOW[:])
 
         self.instances = []
@@ -122,8 +123,10 @@ class LuaPlugin(Plugin):
         if not event.is_mentioned(self.bot.parent.me.id):
             return
 
-        if not Program.check_access(self, event, level=self.config['min_access_level'],
-                                    allow_dm=False, require_whitelists=False):
+        if not Program.check_access(self, event, 
+                                    level=self.config['min_access_level'],
+                                    allow_dm=False, 
+                                    require_whitelists=self.config['require_whitelist']):
             return
 
         instance = None
