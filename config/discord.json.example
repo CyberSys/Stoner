@@ -15,6 +15,11 @@
             "channel_blacklist" : [ ]
         },
         "programs.discord.plugins.lua" : {
+            "server_whitelist" : [ ],
+            "channel_whitelist" : [ ],
+            "channel_blacklist" : [ ],
+            "require_whitelist" : false,
+            "min_access_level" : 0,
             "max_instances" : 5,
             "sandbox" : true,
             "owner_sandbox" : true,
